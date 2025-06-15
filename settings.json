@@ -1,0 +1,41 @@
+{
+  "bot-account": {
+    "username": "BKL",
+    "password": "",
+    "type": "offline"
+  },
+  "server": {
+    "ip": "hamlet.aternos.host",
+    "port": 14105,
+    "version": "1.20.5"
+  },
+  "position": {
+    "enabled": true,
+    "x": 1275,
+    "y": 31,
+    "z": 203
+  },
+  "utils": {
+    "auto-auth": {
+      "enabled": true,
+      "password": "asd123456"
+    },
+    "anti-afk": {
+      "enabled": true,
+      "sneak": true
+    },
+    "chat-messages": {
+      "enabled": false,
+      "repeat": true,
+      "repeat-delay": 10,
+      "messages": [
+        "Ez egy teszt üzenet!",
+        "Ez egy jó szerver!",
+        "play.wineside.eu"
+      ]
+    },
+    "chat-log": true,
+    "auto-reconnect": true,
+    "auto-recconect-delay": 5000
+  }
+}
