@@ -104,7 +104,35 @@ function createBot() {
       setTimeout(createBot, config.utils['auto-recconect-delay']);
     });
   }
-  bot.on('kicked', reason => console.log(`[BotLog] Bot was kicked: ${reason}`));
+  bot.on('kicked', reason => {
+    console.log(`[BotLog] Bot was kicked: ${reason}`);
+    // Try to reconnect after a short delay if kicked
+    if (config.utils['auto-reconnect']) {
+      setTimeout(createBot, config.utils['auto-recconect-delay'] || 5000);
+    }
+  });
+
+  // Add anti-AFK actions (move, jump, rotate, etc.)
+  if (config.utils['anti-afk'] && config.utils['anti-afk'].enabled) {
+    setInterval(() => {
+      if (bot.entity && bot.entity.position) {
+        // Randomly move or jump to avoid AFK kicks
+        const actions = [
+          () => bot.setControlState('jump', true),
+          () => bot.setControlState('jump', false),
+          () => bot.setControlState('left', true),
+          () => bot.setControlState('left', false),
+          () => bot.setControlState('right', true),
+          () => bot.setControlState('right', false),
+          () => bot.setControlState('forward', true),
+          () => bot.setControlState('forward', false),
+          () => bot.look(Math.random() * Math.PI * 2, 0)
+        ];
+        const action = actions[Math.floor(Math.random() * actions.length)];
+        action();
+      }
+    }, 10000); // Every 10 seconds
+  }
 }
 
 createBot();
