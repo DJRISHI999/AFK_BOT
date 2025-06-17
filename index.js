@@ -14,17 +14,9 @@ function getEnvOrValue(val) {
 
 const app = express();
 app.get('/', (req, res) => res.send('Bot Is Ready'));
-app.listen(3000, () => console.log('server started'));
+app.listen(3000);
 
 function createBot() {
-  console.log('[DEBUG] Creating bot with config:', {
-    username: getEnvOrValue(config['bot-account']['username']),
-    host: config.server.ip,
-    port: config.server.port,
-    version: config.server.version,
-    auth: config['bot-account']['type']
-  });
-
   const bot = mineflayer.createBot({
     username: getEnvOrValue(config['bot-account']['username']),
     password: getEnvOrValue(config['bot-account']['password']),
@@ -34,31 +26,8 @@ function createBot() {
     version: config.server.version,
   });
 
-  bot.on('msmc-device-code', (data) => {
-    console.log('\x1b[36m[Microsoft Auth] ACTION REQUIRED!\x1b[0m');
-    console.log('Go to this URL in your browser:');
-    console.log(`\x1b[33m${data.verificationUri}\x1b[0m`);
-    console.log('And enter this code:');
-    console.log(`\x1b[32m${data.userCode}\x1b[0m`);
-    console.log('After you complete this step, the bot will log in automatically.');
-  });
-
-  bot.on('login', () => {
-    console.log('[DEBUG] Bot login event fired.');
-  });
-  bot.on('spawn', () => {
-    console.log('[DEBUG] Bot spawn event fired.');
-  });
-  bot.on('end', (reason) => {
-    console.log(`[DEBUG] Bot end event: ${reason}`);
-  });
-  bot.on('error', (err) => {
-    console.log(`[DEBUG] Bot error event: ${err}`);
-  });
-
   bot.loadPlugin(pathfinder);
   bot.once('spawn', () => {
-    console.log('[BotLog] Bot joined to the server');
     if (config.utils['auto-auth'].enabled) {
       setTimeout(() => {
         const password = config.utils['auto-auth'].password;
@@ -88,35 +57,20 @@ function createBot() {
       bot.setControlState('sneak', true);
     }
   });
-  bot.on('chat', (username, message) => {
-    if (config.utils['chat-log']) {
-      console.log(`[ChatLog] <${username}> ${message}`);
-    }
-  });
-  bot.on('goal_reached', () => {
-    console.log(`[BotLog] Bot arrived to target location. ${bot.entity.position}`);
-  });
-  bot.on('death', () => {
-    console.log(`[BotLog] Bot has died and respawned at ${bot.entity.position}`);
-  });
+
   if (config.utils['auto-reconnect']) {
     bot.on('end', () => {
       setTimeout(createBot, config.utils['auto-recconect-delay']);
     });
+    bot.on('kicked', () => {
+      setTimeout(createBot, config.utils['auto-recconect-delay']);
+    });
   }
-  bot.on('kicked', reason => {
-    console.log(`[BotLog] Bot was kicked: ${reason}`);
-    // Try to reconnect after a short delay if kicked
-    if (config.utils['auto-reconnect']) {
-      setTimeout(createBot, config.utils['auto-recconect-delay'] || 5000);
-    }
-  });
 
-  // Add anti-AFK actions (move, jump, rotate, etc.)
+  // Anti-AFK actions
   if (config.utils['anti-afk'] && config.utils['anti-afk'].enabled) {
     setInterval(() => {
       if (bot.entity && bot.entity.position) {
-        // Randomly move or jump to avoid AFK kicks
         const actions = [
           () => bot.setControlState('jump', true),
           () => bot.setControlState('jump', false),
@@ -131,7 +85,7 @@ function createBot() {
         const action = actions[Math.floor(Math.random() * actions.length)];
         action();
       }
-    }, 10000); // Every 10 seconds
+    }, 10000);
   }
 }
 
