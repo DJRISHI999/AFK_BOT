@@ -49,7 +49,8 @@ function createBot() {
   bot.on('kicked', (reason) => {
     console.log(`[BOT] Kicked event: ${reason}`);
     if (config.utils['auto-reconnect']) {
-      setTimeout(createBot, config.utils['auto-recconect-delay'] || 5000);
+      // Increase reconnect delay to 20 seconds to reduce rapid reconnects
+      setTimeout(createBot, config.utils['auto-recconect-delay'] || 20000);
     }
   });
 
@@ -101,8 +102,7 @@ function createBot() {
           () => bot.setControlState('back', true),
           () => bot.setControlState('back', false),
           () => bot.setControlState('sneak', !bot.getControlState('sneak')),
-          () => bot.look(Math.random() * Math.PI * 2, Math.random() * Math.PI - Math.PI / 2),
-          () => bot.chat(['I am not AFK!', 'Still here!', 'Just chilling!', 'What a nice server!'][Math.floor(Math.random() * 4)])
+          () => bot.look(Math.random() * Math.PI * 2, Math.random() * Math.PI - Math.PI / 2)
         ];
         const action = actions[Math.floor(Math.random() * actions.length)];
         action();
