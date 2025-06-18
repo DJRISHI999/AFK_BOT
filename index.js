@@ -14,9 +14,17 @@ function getEnvOrValue(val) {
 
 const app = express();
 app.get('/', (req, res) => res.send('Bot Is Ready'));
-app.listen(3000);
+app.listen(3000, () => console.log('Express server started on port 3000'));
 
 function createBot() {
+  console.log('[BOT] Creating bot with config:', {
+    username: getEnvOrValue(config['bot-account']['username']),
+    host: config.server.ip,
+    port: config.server.port,
+    version: config.server.version,
+    auth: config['bot-account']['type']
+  });
+
   const bot = mineflayer.createBot({
     username: getEnvOrValue(config['bot-account']['username']),
     password: getEnvOrValue(config['bot-account']['password']),
@@ -24,6 +32,25 @@ function createBot() {
     host: config.server.ip,
     port: config.server.port,
     version: config.server.version,
+  });
+
+  bot.on('login', () => {
+    console.log('[BOT] Login event fired.');
+  });
+  bot.on('spawn', () => {
+    console.log('[BOT] Spawn event fired.');
+  });
+  bot.on('end', (reason) => {
+    console.log(`[BOT] End event: ${reason}`);
+  });
+  bot.on('error', (err) => {
+    console.log(`[BOT] Error event: ${err}`);
+  });
+  bot.on('kicked', (reason) => {
+    console.log(`[BOT] Kicked event: ${reason}`);
+    if (config.utils['auto-reconnect']) {
+      setTimeout(createBot, config.utils['auto-recconect-delay'] || 5000);
+    }
   });
 
   bot.loadPlugin(pathfinder);
@@ -58,16 +85,7 @@ function createBot() {
     }
   });
 
-  if (config.utils['auto-reconnect']) {
-    bot.on('end', () => {
-      setTimeout(createBot, config.utils['auto-recconect-delay']);
-    });
-    bot.on('kicked', () => {
-      setTimeout(createBot, config.utils['auto-recconect-delay']);
-    });
-  }
-
-  // Anti-AFK actions
+  // Enhanced anti-AFK: move, jump, rotate, chat, and sneak randomly
   if (config.utils['anti-afk'] && config.utils['anti-afk'].enabled) {
     setInterval(() => {
       if (bot.entity && bot.entity.position) {
@@ -80,12 +98,16 @@ function createBot() {
           () => bot.setControlState('right', false),
           () => bot.setControlState('forward', true),
           () => bot.setControlState('forward', false),
-          () => bot.look(Math.random() * Math.PI * 2, 0)
+          () => bot.setControlState('back', true),
+          () => bot.setControlState('back', false),
+          () => bot.setControlState('sneak', !bot.getControlState('sneak')),
+          () => bot.look(Math.random() * Math.PI * 2, Math.random() * Math.PI - Math.PI / 2),
+          () => bot.chat(['I am not AFK!', 'Still here!', 'Just chilling!', 'What a nice server!'][Math.floor(Math.random() * 4)])
         ];
         const action = actions[Math.floor(Math.random() * actions.length)];
         action();
       }
-    }, 10000);
+    }, 5000); // Every 5 seconds for more activity
   }
 }
 

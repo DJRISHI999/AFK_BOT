@@ -5,15 +5,15 @@
     "type": "offline"
   },
   "server": {
-    "ip": "Jaadui_Nagri.aternos.me",
-    "port": 14105,
-    "version": "1.20.5"
+    "ip": "Mirzapur_Nagri.aternos.me",
+    "port": 18362,
+    "version": "1.21.5"
   },
   "position": {
     "enabled": true,
-    "x": 1275,
-    "y": 31,
-    "z": 203
+    "x": -236,
+    "y": 67,
+    "z": -239
   },
   "utils": {
     "auto-auth": {
