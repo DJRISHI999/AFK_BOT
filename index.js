@@ -86,28 +86,49 @@ function createBot() {
     }
   });
 
-  // Enhanced anti-AFK: move, jump, rotate, chat, and sneak randomly
+  // Advanced anti-AFK: randomize actions, intervals, and add more human-like behavior
   if (config.utils['anti-afk'] && config.utils['anti-afk'].enabled) {
-    setInterval(() => {
-      if (bot.entity && bot.entity.position) {
-        const actions = [
-          () => bot.setControlState('jump', true),
-          () => bot.setControlState('jump', false),
-          () => bot.setControlState('left', true),
-          () => bot.setControlState('left', false),
-          () => bot.setControlState('right', true),
-          () => bot.setControlState('right', false),
-          () => bot.setControlState('forward', true),
-          () => bot.setControlState('forward', false),
-          () => bot.setControlState('back', true),
-          () => bot.setControlState('back', false),
-          () => bot.setControlState('sneak', !bot.getControlState('sneak')),
-          () => bot.look(Math.random() * Math.PI * 2, Math.random() * Math.PI - Math.PI / 2)
-        ];
-        const action = actions[Math.floor(Math.random() * actions.length)];
-        action();
-      }
-    }, 5000); // Every 5 seconds for more activity
+    function randomAction() {
+      if (!bot.entity || !bot.entity.position) return;
+      const actions = [
+        () => bot.setControlState('jump', true),
+        () => bot.setControlState('jump', false),
+        () => bot.setControlState('left', true),
+        () => bot.setControlState('left', false),
+        () => bot.setControlState('right', true),
+        () => bot.setControlState('right', false),
+        () => bot.setControlState('forward', true),
+        () => bot.setControlState('forward', false),
+        () => bot.setControlState('back', true),
+        () => bot.setControlState('back', false),
+        () => bot.setControlState('sprint', !bot.getControlState('sprint')),
+        () => bot.setControlState('sneak', !bot.getControlState('sneak')),
+        () => bot.look(Math.random() * Math.PI * 2, Math.random() * Math.PI - Math.PI / 2),
+        () => bot.setQuickBarSlot(Math.floor(Math.random() * 9)),
+        () => bot.activateItem(),
+        () => bot.deactivateItem(),
+        () => {
+          // Simulate a small random walk
+          const dx = (Math.random() - 0.5) * 2;
+          const dz = (Math.random() - 0.5) * 2;
+          bot.pathfinder.setGoal(new GoalBlock(
+            Math.round(bot.entity.position.x + dx),
+            Math.round(bot.entity.position.y),
+            Math.round(bot.entity.position.z + dz)
+          ));
+        }
+      ];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+      action();
+    }
+    function scheduleNextAction() {
+      const interval = 2000 + Math.random() * 5000; // 2-7 seconds
+      setTimeout(() => {
+        randomAction();
+        scheduleNextAction();
+      }, interval);
+    }
+    scheduleNextAction();
   }
 }
 
