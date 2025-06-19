@@ -42,6 +42,10 @@ function createBot() {
   });
   bot.on('end', (reason) => {
     console.log(`[BOT] End event: ${reason}`);
+    if (config.utils['auto-reconnect']) {
+      // Always try to reconnect after any disconnect, including socketClosed
+      setTimeout(createBot, config.utils['auto-recconect-delay'] || 20000);
+    }
   });
   bot.on('error', (err) => {
     console.log(`[BOT] Error event: ${err}`);
