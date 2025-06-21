@@ -90,7 +90,7 @@ function createBot() {
     }
   });
 
-  // Advanced anti-AFK: randomize actions, intervals, and add more human-like behavior
+  // Advanced anti-AFK and anti-kick: randomize actions, intervals, and add more human-like behavior
   if (config.utils['anti-afk'] && config.utils['anti-afk'].enabled) {
     function randomAction() {
       if (!bot.entity || !bot.entity.position) return;
@@ -113,20 +113,26 @@ function createBot() {
         () => bot.deactivateItem(),
         () => {
           // Simulate a small random walk
-          const dx = (Math.random() - 0.5) * 2;
-          const dz = (Math.random() - 0.5) * 2;
+          const dx = (Math.random() - 0.5) * 4;
+          const dz = (Math.random() - 0.5) * 4;
           bot.pathfinder.setGoal(new GoalBlock(
             Math.round(bot.entity.position.x + dx),
             Math.round(bot.entity.position.y),
             Math.round(bot.entity.position.z + dz)
           ));
+        },
+        () => {
+          // Simulate a random jump and look
+          bot.setControlState('jump', true);
+          setTimeout(() => bot.setControlState('jump', false), 400 + Math.random() * 600);
+          bot.look(Math.random() * Math.PI * 2, Math.random() * Math.PI - Math.PI / 2);
         }
       ];
       const action = actions[Math.floor(Math.random() * actions.length)];
       action();
     }
     function scheduleNextAction() {
-      const interval = 2000 + Math.random() * 5000; // 2-7 seconds
+      const interval = 1500 + Math.random() * 3500; // 1.5-5 seconds
       setTimeout(() => {
         randomAction();
         scheduleNextAction();
